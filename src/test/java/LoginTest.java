@@ -1,14 +1,12 @@
-package ru.practicum;
-
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
+import ru.practicum.page_objects.*;
 import ru.practicum.api_steps.UsersSteps;
 import ru.practicum.constants.Browser;
-import ru.practicum.page_objects.*;
 import ru.practicum.pojos.SignInRequest;
 import ru.practicum.pojos.SuccessSignInSignUpResponse;
 import ru.practicum.pojos.UserRequest;

@@ -1,5 +1,3 @@
-package ru.practicum;
-
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -10,11 +8,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
-import ru.practicum.api_steps.UsersSteps;
-import ru.practicum.constants.Browser;
 import ru.practicum.page_objects.LoginPage;
 import ru.practicum.page_objects.MainPage;
 import ru.practicum.page_objects.SignUpPage;
+import ru.practicum.api_steps.UsersSteps;
+import ru.practicum.constants.Browser;
 import ru.practicum.pojos.SignInRequest;
 import ru.practicum.pojos.SuccessSignInSignUpResponse;
 import ru.practicum.utils.ConfigFileReader;
@@ -29,6 +27,8 @@ public class SignUpTest {
     LoginPage loginPage;
     SignUpPage signUpPage;
     Browser browserEnum;
+    String accessToken;
+
     public SignUpTest(Browser browserEnum) {
         this.browserEnum = browserEnum;
     }
@@ -53,6 +53,7 @@ public class SignUpTest {
     @After
     public void shutdown() {
         driver.quit();
+        UsersSteps.deleteUser(accessToken);
     }
 
     @DisplayName("Успешная регистрация с корректными данными")
@@ -70,19 +71,17 @@ public class SignUpTest {
         signUpPage.enterEmail(email);
         signUpPage.enterPassword(password);
         signUpPage.clickSignUpButton();
-
-        boolean displayed = loginPage.getSignInButton().isDisplayed();
-        Assert.assertTrue("Регистрация не выполнена", displayed);
-
         Response response = UsersSteps.signInWithSignInRequest(new SignInRequest(email, password));
 
-        String accessToken = response
+        accessToken = response
                 .then()
                 .statusCode(200)
                 .extract()
                 .as(SuccessSignInSignUpResponse.class).getAccessToken();
 
-        UsersSteps.deleteUser(accessToken);
+
+        boolean displayed = loginPage.getSignInButton().isDisplayed();
+        Assert.assertTrue("Регистрация не выполнена", displayed);
     }
 
     @DisplayName("Ошибка при регистрации - пароль меньше 6 символов")

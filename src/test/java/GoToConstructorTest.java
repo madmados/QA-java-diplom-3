@@ -1,5 +1,3 @@
-package ru.practicum;
-
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import org.junit.After;
@@ -9,11 +7,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
+import ru.practicum.page_objects.LoginPage;
+import ru.practicum.page_objects.MainPage;
 import ru.practicum.api_steps.UsersSteps;
 import ru.practicum.constants.Browser;
 import ru.practicum.page_objects.AccountPage;
-import ru.practicum.page_objects.LoginPage;
-import ru.practicum.page_objects.MainPage;
 import ru.practicum.pojos.SignInRequest;
 import ru.practicum.pojos.SuccessSignInSignUpResponse;
 import ru.practicum.pojos.UserRequest;
@@ -30,6 +28,7 @@ public class GoToConstructorTest {
     LoginPage loginPage;
     AccountPage accountPage;
     Browser browserEnum;
+    String accessToken;
 
     public GoToConstructorTest(Browser browserEnum) {
         this.browserEnum = browserEnum;
@@ -42,6 +41,7 @@ public class GoToConstructorTest {
                 {Browser.YANDEX}
         };
     }
+
     @Before
     public void init() {
         driver = DriverInitializer.getDriver(browserEnum);
@@ -57,6 +57,7 @@ public class GoToConstructorTest {
     @After
     public void shutdown() {
         driver.quit();
+        UsersSteps.deleteUser(accessToken);
     }
 
     @Test
@@ -70,6 +71,7 @@ public class GoToConstructorTest {
                 .statusCode(200)
                 .extract()
                 .as(SuccessSignInSignUpResponse.class);
+        accessToken = signUpResponse.getAccessToken();
 
         mainPage.clickAccountButton();
         loginPage.loginWithCredentials(new SignInRequest(user.getEmail(), user.getPassword()));
@@ -77,8 +79,7 @@ public class GoToConstructorTest {
         accountPage.clickGoToConstructorButton();
 
         boolean displayed = mainPage.getBurgerConstructorHeader().isDisplayed();
-        Assert.assertTrue("Конструктор не открыт",displayed);
+        Assert.assertTrue("Конструктор не открыт", displayed);
 
-        UsersSteps.deleteUser(signUpResponse.getAccessToken());
     }
 }

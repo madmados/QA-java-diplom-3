@@ -8,7 +8,7 @@ import org.openqa.selenium.support.PageFactory;
 
 @Data
 public class AccountPage {
-    WebDriver driver;
+    private WebDriver driver;
 
     @FindBy
     WebElement editPasswordButton;

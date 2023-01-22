@@ -1,5 +1,3 @@
-package ru.practicum;
-
 import io.restassured.RestAssured;
 import org.junit.After;
 import org.junit.Assert;

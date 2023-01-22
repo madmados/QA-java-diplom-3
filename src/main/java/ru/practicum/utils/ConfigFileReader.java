@@ -29,19 +29,19 @@ public class ConfigFileReader {
 
     public String getApplicationUrl() {
         String url = properties.getProperty("test.application.url");
-        if(url != null) return url;
+        if (url != null) return url;
         else throw new RuntimeException("url not specified in the Configuration.properties file.");
     }
 
     public String getTestUserEmail() {
         String email = properties.getProperty("test.user.email");
-        if(email != null) return email;
+        if (email != null) return email;
         else throw new RuntimeException("email not specified in the Configuration.properties file.");
     }
 
     public String getTestUserPassword() {
         String password = properties.getProperty("test.user.password");
-        if(password != null) return password;
+        if (password != null) return password;
         else throw new RuntimeException("password not specified in the Configuration.properties file.");
     }
 }

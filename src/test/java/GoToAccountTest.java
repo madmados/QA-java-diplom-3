@@ -1,5 +1,3 @@
-package ru.practicum;
-
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import org.junit.After;
@@ -9,11 +7,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
+import ru.practicum.page_objects.LoginPage;
+import ru.practicum.page_objects.MainPage;
 import ru.practicum.api_steps.UsersSteps;
 import ru.practicum.constants.Browser;
 import ru.practicum.page_objects.AccountPage;
-import ru.practicum.page_objects.LoginPage;
-import ru.practicum.page_objects.MainPage;
 import ru.practicum.pojos.SignInRequest;
 import ru.practicum.pojos.SuccessSignInSignUpResponse;
 import ru.practicum.pojos.UserRequest;
@@ -24,17 +22,16 @@ import ru.practicum.utils.UsersUtils;
 import java.time.Duration;
 
 @RunWith(Parameterized.class)
-public class LogoutTest {
+public class GoToAccountTest {
     WebDriver driver;
     MainPage mainPage;
     LoginPage loginPage;
     AccountPage accountPage;
     Browser browserEnum;
-    UserRequest testUser;
     String accessToken;
-    SignInRequest signInRequest;
+    ConfigFileReader configFileReader = new ConfigFileReader();
 
-    public LogoutTest(Browser browserEnum) {
+    public GoToAccountTest(Browser browserEnum) {
         this.browserEnum = browserEnum;
     }
 
@@ -45,24 +42,14 @@ public class LogoutTest {
                 {Browser.YANDEX}
         };
     }
+
     @Before
     public void init() {
-        testUser = UsersUtils.getUniqueUser();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
-        SuccessSignInSignUpResponse signUpResponse = UsersSteps.createUniqueUser(testUser)
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(SuccessSignInSignUpResponse.class);
-        accessToken = signUpResponse.getAccessToken();
-        signInRequest = new SignInRequest(testUser.getEmail(), testUser.getPassword());
-
         driver = DriverInitializer.getDriver(browserEnum);
+        driver.get(configFileReader.getApplicationUrl());
         mainPage = new MainPage(driver);
-        loginPage = new LoginPage(driver);
         accountPage = new AccountPage(driver);
-        driver.get(new ConfigFileReader().getApplicationUrl() + "/login");
+        loginPage = new LoginPage(driver);
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }
@@ -70,17 +57,28 @@ public class LogoutTest {
     @After
     public void shutdown() {
         driver.quit();
+        UsersSteps.deleteUser(accessToken);
     }
 
     @Test
-    @DisplayName("Выход по кнопке Выйти в личном кабинете")
-    public void logoutWithLogoutButtonSuccess() {
-        loginPage.loginWithCredentials(signInRequest);
+    @DisplayName("Успешный переход по клику на Личный кабинет")
+    public void goToAccountWithAccountButtonSuccess() {
+        UserRequest user = UsersUtils.getUniqueUser();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+        accessToken = UsersSteps.createUniqueUser(user)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SuccessSignInSignUpResponse.class)
+                .getAccessToken();
+
         mainPage.clickAccountButton();
-        accountPage.clickLogoutButton();
+        loginPage.loginWithCredentials(new SignInRequest(user.getEmail(), user.getPassword()));
         mainPage.clickAccountButton();
 
-        boolean displayed = loginPage.getSignInButton().isDisplayed();
-        Assert.assertTrue("Выход из личного кабинета не выполнен", displayed);
+        boolean displayed = accountPage.getProfileButton().isDisplayed();
+        Assert.assertTrue("Личный кабинет не открыт", displayed);
+
     }
 }
